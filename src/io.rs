@@ -19,9 +19,9 @@ impl<'a> Cursor<'a> {
     }
 }
 
-impl<'a> core::fmt::Write for Cursor<'a> {
+impl core::fmt::Write for Cursor<'_> {
     fn write_str(&mut self, s: &str) -> core::fmt::Result {
-        let len = s.as_bytes().len();
+        let len = s.len();
         if len < self.buf.len() - self.pos {
             self.buf[self.pos..self.pos + len].clone_from_slice(s.as_bytes());
             self.pos += len;

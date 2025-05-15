@@ -13,7 +13,7 @@ pub struct Leds<'d> {
 //TODO write documentation
 impl<'d> Leds<'d> {
     pub fn new(
-        mut common: &mut Common<'d, PIO0>,
+        common: &mut Common<'d, PIO0>,
         sm0: StateMachine<'d, PIO0, 0>,
         dma: DMA_CH0,
         pin: PIN_33,
@@ -25,7 +25,7 @@ impl<'d> Leds<'d> {
         const NUM_LEDS: usize = 7;
 
         let program = PioWs2812Program::new(common);
-        let ws2812 = PioWs2812::new(&mut common, sm0, dma, pin, &program);
+        let ws2812 = PioWs2812::new(common, sm0, dma, pin, &program);
         Self {
             ws2812,
             lights: [RGB8::default(); NUM_LEDS],

@@ -101,10 +101,10 @@ impl ST7701 {
         // embassy_rp::pac::PIO2.irq()
         let Pio {
             mut common,
-            mut irq3,
+            irq3,
             mut sm0,
             sm1,
-            irq_flags,
+            
             ..
         } = Pio::new(pio, Irqs);
 
@@ -158,7 +158,7 @@ impl ST7701 {
         cfg.use_program(&common.load_program(&parallel_program), &[&lcd_de]);
 
         let max_pio_clk = 34_000_000;
-        let clock_divider = (sys_clock + max_pio_clk - 1) / max_pio_clk;
+        let clock_divider = sys_clock.div_ceil(max_pio_clk);
         if width == Width::W480 {
             cfg.clock_divider = (clock_divider >> 1).to_fixed();
         } else {
@@ -354,7 +354,7 @@ impl ST7701 {
         let command_frame = CMD | (command as u16);
         self.spi
             .get_mut()
-            .write(&[command_frame].as_byte_slice())
+            .write([command_frame].as_byte_slice())
             .await
             .unwrap();
         // self.spi.write(&[command_frame]).unwrap();
