@@ -1,3 +1,5 @@
+#![allow(clippy::upper_case_acronyms)]
+
 /// Display Controller Commands
 /// TODO clean up the dups and see if they can share names. C enum had repeats, but not allowed in rust
 #[derive(Debug, Copy, Clone)]
