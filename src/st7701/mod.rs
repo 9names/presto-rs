@@ -116,29 +116,32 @@ impl ST7701 {
 
         //Setup data pins
 
-        sm0.set_pin_dirs(Direction::Out, &[
-            //Data pins
-            &common.make_pio_pin(pin_1),
-            &common.make_pio_pin(pin_2),
-            &common.make_pio_pin(pin_3),
-            &common.make_pio_pin(pin_4),
-            &common.make_pio_pin(pin_5),
-            &common.make_pio_pin(pin_6),
-            &common.make_pio_pin(pin_7),
-            &common.make_pio_pin(pin_8),
-            &common.make_pio_pin(pin_9),
-            &common.make_pio_pin(pin_10),
-            &common.make_pio_pin(pin_11),
-            &common.make_pio_pin(pin_12),
-            &common.make_pio_pin(pin_13),
-            &common.make_pio_pin(pin_14),
-            &common.make_pio_pin(pin_15),
-            &common.make_pio_pin(pin_16),
-            //Other pins
-            &hsync_pio,
-            &vsync_pio,
-            &lcd_dot_clk,
-        ]);
+        sm0.set_pin_dirs(
+            Direction::Out,
+            &[
+                //Data pins
+                &common.make_pio_pin(pin_1),
+                &common.make_pio_pin(pin_2),
+                &common.make_pio_pin(pin_3),
+                &common.make_pio_pin(pin_4),
+                &common.make_pio_pin(pin_5),
+                &common.make_pio_pin(pin_6),
+                &common.make_pio_pin(pin_7),
+                &common.make_pio_pin(pin_8),
+                &common.make_pio_pin(pin_9),
+                &common.make_pio_pin(pin_10),
+                &common.make_pio_pin(pin_11),
+                &common.make_pio_pin(pin_12),
+                &common.make_pio_pin(pin_13),
+                &common.make_pio_pin(pin_14),
+                &common.make_pio_pin(pin_15),
+                &common.make_pio_pin(pin_16),
+                //Other pins
+                &hsync_pio,
+                &vsync_pio,
+                &lcd_dot_clk,
+            ],
+        );
         //Pull 17 and 18 low for now
         Output::new(pin_17, Level::Low);
         Output::new(pin_18, Level::Low);
