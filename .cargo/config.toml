@@ -1,2 +1,9 @@
+[target.'cfg(all(target_arch = "arm", target_os = "none"))']
+runner = "probe-rs run --chip RP235x --protocol swd --speed 16000 --always-print-stacktrace"
+
 [build]
 target = "thumbv8m.main-none-eabihf"
+debug = 2
+
+[env]
+DEFMT_LOG = "debug"
