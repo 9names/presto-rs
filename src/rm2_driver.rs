@@ -30,32 +30,33 @@ pub async fn setup_rm2<'a>(
     dma_ch0: DMA_CH1,
     spawner: Spawner,
 ) -> (NetDevice<'a>, Control<'a>) {
-    let fw = include_bytes!("../cyw43-firmware/43439A0.bin");
-    let clm = include_bytes!("../cyw43-firmware/43439A0_clm.bin");
+    todo!()
+    // let fw = include_bytes!("../cyw43-firmware/43439A0.bin");
+    // let clm = include_bytes!("../cyw43-firmware/43439A0_clm.bin");
 
-    let pwr = Output::new(p_23, Level::Low);
-    let cs = Output::new(p_25, Level::High);
-    let mut pio = Pio::new(pio0, Irqs);
-    let spi = PioSpi::new(
-        &mut pio.common,
-        pio.sm0,
-        RM2_CLOCK_DIVIDER,
-        pio.irq0,
-        cs,
-        p_24,
-        p_29,
-        dma_ch0,
-    );
+    // let pwr = Output::new(p_23, Level::Low);
+    // let cs = Output::new(p_25, Level::High);
+    // let mut pio = Pio::new(pio0, Irqs);
+    // let spi = PioSpi::new(
+    //     &mut pio.common,
+    //     pio.sm0,
+    //     RM2_CLOCK_DIVIDER,
+    //     pio.irq0,
+    //     cs,
+    //     p_24,
+    //     p_29,
+    //     dma_ch0,
+    // );
 
-    static STATE: StaticCell<cyw43::State> = StaticCell::new();
-    let state = STATE.init(cyw43::State::new());
-    let (net_device, mut control, runner) = cyw43::new(state, pwr, spi, fw).await;
+    // static STATE: StaticCell<cyw43::State> = StaticCell::new();
+    // let state = STATE.init(cyw43::State::new());
+    // let (net_device, mut control, runner) = cyw43::new(state, pwr, spi, fw).await;
 
-    spawner.must_spawn(rm2_task(runner));
+    // spawner.must_spawn(rm2_task(runner));
 
-    control.init(clm).await;
-    control
-        .set_power_management(cyw43::PowerManagementMode::PowerSave)
-        .await;
-    (net_device, control)
+    // control.init(clm).await;
+    // control
+    //     .set_power_management(cyw43::PowerManagementMode::PowerSave)
+    //     .await;
+    // (net_device, control)
 }

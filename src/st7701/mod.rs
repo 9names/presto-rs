@@ -3,14 +3,14 @@
 use byte_slice_cast::AsByteSlice;
 use commands::LcdCommand;
 use embassy_rp::{
-    gpio::{Level, Output},
-    peripherals::*,
-    pio::{Common, Direction, Irq, Pio, StateMachine},
-    pwm::{Config, Pwm, SetDutyCycle},
-    spi::{Async, Spi},
+    dma::Channel, gpio::{self, Level, Output, Pin}, peripherals::*, pio::{Common, Direction, Instance, Irq, Pio, PioPin, StateMachine}, pwm::{Config, Pwm, SetDutyCycle}, spi::{Async, Spi}, Peri, Peripherals
 };
 use embassy_sync::{blocking_mutex::raw::NoopRawMutex, mutex::Mutex};
 use embassy_time::{Duration, Timer};
+use embedded_graphics::{
+    pixelcolor::{Rgb565, raw::RawU16},
+    prelude::{RawData, WebColors},
+};
 use fixed::traits::ToFixed;
 
 use crate::Irqs;
@@ -24,7 +24,7 @@ pub enum Width {
 }
 
 impl Width {
-    pub fn number(&self) -> u16 {
+    pub const fn number(&self) -> u16 {
         match self {
             Width::W240 => 240,
             Width::W480 => 480,
@@ -32,17 +32,17 @@ impl Width {
     }
 }
 
-pub struct ST7701 {
-    pwm_backlight: Pwm<'static>,
-    spi: &'static mut Mutex<NoopRawMutex, Spi<'static, SPI1, Async>>,
-    cs: Output<'static>,
-    parallel_sm: StateMachine<'static, PIO2, 0>,
-    timing_sm: StateMachine<'static, PIO2, 1>,
-    common: Common<'static, PIO2>,
-    irq3: Irq<'static, PIO2, 3>,
+pub struct ST7701<'d> {
+    pwm_backlight: Pwm<'d>,
+    spi: &'d mut Mutex<NoopRawMutex, Spi<'d, SPI1, Async>>,
+    cs: Output<'d>,
+    parallel_sm: StateMachine<'d, PIO2, 0>,
+    timing_sm: StateMachine<'d, PIO2, 1>,
+    common: Common<'d, PIO2>,
+    irq3: Irq<'d, PIO2, 3>,
 }
 
-pub fn setup_backlight_pwm(lcd_bl: PIN_45, lcd_pwm_slice: PWM_SLICE10) -> Pwm<'static> {
+pub fn setup_backlight_pwm<'d>(lcd_bl: Peri<'d,PIN_45>, lcd_pwm_slice: Peri<'d, PWM_SLICE10>) -> Pwm<'d> {
     let mut c = Config::default();
     //What the data sheet says is max and embassy example says to find the frequency
     // let desired_freq_hz = 25_000;
@@ -57,38 +57,38 @@ pub fn setup_backlight_pwm(lcd_bl: PIN_45, lcd_pwm_slice: PWM_SLICE10) -> Pwm<'s
     Pwm::new_output_b(lcd_pwm_slice, lcd_bl, c.clone())
 }
 
-impl ST7701 {
+impl<'d> ST7701<'d> {
     pub async fn new(
-        lcd_bl: PIN_45,
+        lcd_bl: Peri<'d,PIN_45>,
         //GPIO 1-16 are rgb data lines
-        pin_1: PIN_1,
-        pin_2: PIN_2,
-        pin_3: PIN_3,
-        pin_4: PIN_4,
-        pin_5: PIN_5,
-        pin_6: PIN_6,
-        pin_7: PIN_7,
-        pin_8: PIN_8,
-        pin_9: PIN_9,
-        pin_10: PIN_10,
-        pin_11: PIN_11,
-        pin_12: PIN_12,
-        pin_13: PIN_13,
-        pin_14: PIN_14,
-        pin_15: PIN_15,
-        pin_16: PIN_16,
+        pin_1: Peri<'d,PIN_1>,
+        pin_2: Peri<'d,PIN_2>,
+        pin_3: Peri<'d,PIN_3>,
+        pin_4: Peri<'d,PIN_4>,
+        pin_5: Peri<'d,PIN_5>,
+        pin_6: Peri<'d,PIN_6>,
+        pin_7: Peri<'d,PIN_7>,
+        pin_8: Peri<'d,PIN_8>,
+        pin_9: Peri<'d,PIN_9>,
+        pin_10: Peri<'d,PIN_10>,
+        pin_11: Peri<'d,PIN_11>,
+        pin_12: Peri<'d,PIN_12>,
+        pin_13: Peri<'d,PIN_13>,
+        pin_14: Peri<'d,PIN_14>,
+        pin_15: Peri<'d,PIN_15>,
+        pin_16: Peri<'d,PIN_16>,
         //GPIO 17 and 18 are just pulled low for now. Used for 18 bit mode
-        pin_17: PIN_17,
-        pin_18: PIN_18,
-        hsync: PIN_19,
-        vsync: PIN_20,
-        lcd_de: PIN_21,
-        lcd_dot_clk: PIN_22,
-        lcd_pwm_slice: PWM_SLICE10,
-        spi_bus: &'static mut Mutex<NoopRawMutex, Spi<'static, SPI1, Async>>,
-        lcd_cs: Output<'static>,
-        pio: PIO2,
-        dma_ch3: DMA_CH3,
+        pin_17: Peri<'d, PIN_17>,
+        pin_18: Peri<'d, PIN_18>,
+        hsync: Peri<'d, impl PioPin>,
+        vsync: Peri<'d, impl PioPin>,
+        lcd_de: Peri<'d, impl PioPin>,
+        lcd_dot_clk: Peri<'d, impl PioPin>,
+        lcd_pwm_slice: Peri<'d, PWM_SLICE10>,
+        spi_bus: &'d mut Mutex<NoopRawMutex, Spi<'d, SPI1, Async>>,
+        lcd_cs: Output<'d>,
+        pio: Peri<'d, PIO2>,
+        dma_ch3: Peri<'d, DMA_CH3>,
     ) -> Self {
         let width = Width::W240;
         //Setup brightness pwm and turn it off asap as we setup the display.
@@ -104,7 +104,6 @@ impl ST7701 {
             irq3,
             mut sm0,
             sm1,
-            
             ..
         } = Pio::new(pio, Irqs);
 
@@ -147,7 +146,7 @@ impl ST7701 {
         Output::new(pin_18, Level::Low);
 
         //Setup the Parallel PIO program
-        let parallel_program = pio_proc::pio_file!(
+        let parallel_program = pio::pio_file!(
             "src/st7701/pio/st7701_parallel.pio",
             select_program("st7701_parallel"), // Optional if only one program in the file
             options(max_program_size = 32)     // Optional, defaults to 32
@@ -155,12 +154,13 @@ impl ST7701 {
         let parallel_program = parallel_program.program;
         let mut cfg = embassy_rp::pio::Config::default();
 
+        // cfg.use_program(&common.load_program(&parallel_program), &[&lcd_de]);
         cfg.use_program(&common.load_program(&parallel_program), &[&lcd_de]);
 
         let max_pio_clk = 34_000_000;
         let clock_divider = sys_clock.div_ceil(max_pio_clk);
         if width == Width::W480 {
-            cfg.clock_divider = (clock_divider >> 1).to_fixed();
+            cfg.clock_divider = (clock_divider / 2).to_fixed();
         } else {
             cfg.clock_divider = clock_divider.to_fixed();
         }
@@ -172,24 +172,33 @@ impl ST7701 {
             bit_count: 32,
         };
         unsafe { sm0.exec_instr(y_set.encode()) };
-        sm0.tx().push((width.number() as u32 >> 1) - 1);
+        sm0.tx().push(((width.number() / 2) - 1).into());
         sm0.set_enable(true);
 
         // irq3();
         embassy_rp::pac::PIO2.irq().write(|w| w.set_irq(1));
-
+        defmt::info!("1");
         // irq3.wait().await;
+        defmt::info!("2");
+        // irq3.wait().await;
+        // irq3.
 
         // //240x240 buffer of the color pink in 16
-        // let mut data = [0u16; 240 * 240];
-        // for i in 0..240 * 240 {
-        //     data[i] = RawU16::from(Rgb565::BLUE).into_inner();
-        // }
-        // let mut dma_out_ref = dma_ch3.into_ref();
-        // let (_, tx) = sm0.rx_tx();
+        let mut data = [0u16; 240 * 240];
+        for i in 0..240 * 240 {
+            data[i] = RawU16::from(Rgb565::CSS_BLUE).into_inner();
+        }
+        // let mut data = [0u16; 4];
+        // let mut dma_out_ref = dma_ch3.into();
+        let (_, tx) = sm0.rx_tx();
+        defmt::info!("3");
+        // let tx = sm0.tx();
+        for d in data {
+            tx.wait_push(d.into()).await;
+        }
 
-        // // let result = tx.dma_push(dma_out_ref, &data).await;
-
+        // let result = tx.dma_push(dma_ch3, &data, false).await;
+        defmt::info!("4");
         //Setup the Timing PIO program
 
         //TODO for the interupts like timing wait and so on just going have to pass in the spawner

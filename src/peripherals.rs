@@ -1,5 +1,6 @@
 #![allow(non_snake_case)]
-use crate::{Irqs, audio::Audio, leds::Leds, st7701::ST7701};
+// use crate::{Irqs, audio::Audio, leds::Leds, st7701::ST7701};
+use crate::{audio::Audio, leds::Leds, st7701::ST7701, Irqs};
 pub use embassy_rp::peripherals::*;
 use embassy_rp::{
     config::Config,
@@ -93,7 +94,7 @@ pub struct Peripherals {
     //Hey Presto
     pub LEDS: Leds<'static>,
     pub BUZZER: Audio<'static>,
-    pub ST7701: ST7701,
+    // pub ST7701: ST7701,
 }
 
 pub async fn init(config: Config) -> Peripherals {
@@ -153,85 +154,85 @@ pub async fn init(config: Config) -> Peripherals {
     display.init().await;
 
     Peripherals {
-        PIN_0: p.PIN_0,
+        PIN_0: *p.PIN_0,
 
         //RM2 pins
-        PIN_23: p.PIN_23,
-        PIN_24: p.PIN_24,
-        PIN_25: p.PIN_25,
-        PIN_29: p.PIN_29,
+        PIN_23: *p.PIN_23,
+        PIN_24: *p.PIN_24,
+        PIN_25: *p.PIN_25,
+        PIN_29: *p.PIN_29,
 
         // PIN_27: p.PIN_27,
         // PIN_28: p.PIN_28,
-        PIN_40: p.PIN_40,
-        PIN_41: p.PIN_41,
+        PIN_40: *p.PIN_40,
+        PIN_41: *p.PIN_41,
 
-        PIN_QSPI_SCLK: p.PIN_QSPI_SCLK,
-        PIN_QSPI_SS: p.PIN_QSPI_SS,
-        PIN_QSPI_SD0: p.PIN_QSPI_SD0,
-        PIN_QSPI_SD1: p.PIN_QSPI_SD1,
-        PIN_QSPI_SD2: p.PIN_QSPI_SD2,
-        PIN_QSPI_SD3: p.PIN_QSPI_SD3,
+        PIN_QSPI_SCLK: *p.PIN_QSPI_SCLK,
+        PIN_QSPI_SS: *p.PIN_QSPI_SS,
+        PIN_QSPI_SD0: *p.PIN_QSPI_SD0,
+        PIN_QSPI_SD1: *p.PIN_QSPI_SD1,
+        PIN_QSPI_SD2: *p.PIN_QSPI_SD2,
+        PIN_QSPI_SD3: *p.PIN_QSPI_SD3,
 
-        UART0: p.UART0,
-        UART1: p.UART1,
+        UART0: *p.UART0,
+        UART1: *p.UART1,
 
-        SPI0: p.SPI0,
+        SPI0: *p.SPI0,
         // SPI1: p.SPI1,
-        I2C0: p.I2C0,
-        I2C1: p.I2C1,
+        I2C0: *p.I2C0,
+        I2C1: *p.I2C1,
 
         // DMA_CH0: p.DMA_CH0,
-        DMA_CH1: p.DMA_CH1,
+        DMA_CH1: *p.DMA_CH1,
         // DMA_CH2: p.DMA_CH2,
         // DMA_CH3: p.DMA_CH3,
-        DMA_CH4: p.DMA_CH4,
-        DMA_CH5: p.DMA_CH5,
-        DMA_CH6: p.DMA_CH6,
-        DMA_CH7: p.DMA_CH7,
-        DMA_CH8: p.DMA_CH8,
-        DMA_CH9: p.DMA_CH9,
-        DMA_CH10: p.DMA_CH10,
-        DMA_CH11: p.DMA_CH11,
-        DMA_CH12: p.DMA_CH12,
-        DMA_CH13: p.DMA_CH13,
-        DMA_CH14: p.DMA_CH14,
-        DMA_CH15: p.DMA_CH15,
+        DMA_CH4: *p.DMA_CH4,
+        DMA_CH5: *p.DMA_CH5,
+        DMA_CH6: *p.DMA_CH6,
+        DMA_CH7: *p.DMA_CH7,
+        DMA_CH8: *p.DMA_CH8,
+        DMA_CH9: *p.DMA_CH9,
+        DMA_CH10: *p.DMA_CH10,
+        DMA_CH11: *p.DMA_CH11,
+        DMA_CH12: *p.DMA_CH12,
+        DMA_CH13: *p.DMA_CH13,
+        DMA_CH14: *p.DMA_CH14,
+        DMA_CH15: *p.DMA_CH15,
 
-        PWM_SLICE0: p.PWM_SLICE0,
-        PWM_SLICE1: p.PWM_SLICE1,
-        PWM_SLICE2: p.PWM_SLICE2,
-        PWM_SLICE3: p.PWM_SLICE3,
-        PWM_SLICE4: p.PWM_SLICE4,
-        PWM_SLICE5: p.PWM_SLICE5,
-        PWM_SLICE7: p.PWM_SLICE7,
-        PWM_SLICE8: p.PWM_SLICE8,
+        PWM_SLICE0: *p.PWM_SLICE0,
+        PWM_SLICE1: *p.PWM_SLICE1,
+        PWM_SLICE2: *p.PWM_SLICE2,
+        PWM_SLICE3: *p.PWM_SLICE3,
+        PWM_SLICE4: *p.PWM_SLICE4,
+        PWM_SLICE5: *p.PWM_SLICE5,
+        PWM_SLICE7: *p.PWM_SLICE7,
+        PWM_SLICE8: *p.PWM_SLICE8,
         // PWM_SLICE9: p.PWM_SLICE9,
         // PWM_SLICE10: p.PWM_SLICE10,
-        PWM_SLICE11: p.PWM_SLICE11,
+        PWM_SLICE11: *p.PWM_SLICE11,
 
-        USB: p.USB,
+        USB: *p.USB,
 
-        RTC: p.RTC,
+        RTC: *p.RTC,
 
-        FLASH: p.FLASH,
+        FLASH: *p.FLASH,
 
-        ADC: p.ADC,
-        ADC_TEMP_SENSOR: p.ADC_TEMP_SENSOR,
+        ADC: *p.ADC,
+        ADC_TEMP_SENSOR: *p.ADC_TEMP_SENSOR,
 
-        CORE1: p.CORE1,
+        CORE1: *p.CORE1,
 
         // PIO0: p.PIO0,
         //RM2 PIO
-        PIO1: p.PIO1,
+        PIO1: *p.PIO1,
         // PIO2: p.PIO2,
-        WATCHDOG: p.WATCHDOG,
-        BOOTSEL: p.BOOTSEL,
+        WATCHDOG: *p.WATCHDOG,
+        BOOTSEL: *p.BOOTSEL,
 
-        TRNG: p.TRNG,
+        TRNG: *p.TRNG,
         //Hey Presto
         LEDS: Leds::new(&mut common, sm0, p.DMA_CH0, p.PIN_33),
         BUZZER: Audio::new(p.PWM_SLICE9, p.PIN_43),
-        ST7701: display,
+        // ST7701: display,
     }
 }

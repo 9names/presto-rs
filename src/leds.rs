@@ -1,9 +1,11 @@
 use embassy_rp::{
     peripherals::{DMA_CH0, PIN_33, PIO0},
-    pio::{Common, StateMachine},
-    pio_programs::ws2812::{PioWs2812, PioWs2812Program},
+    pio::{Common, Pio, PioPin, StateMachine},
+    pio_programs::ws2812::{PioWs2812, PioWs2812Program}, Peri,
 };
 use smart_leds::RGB8;
+
+use crate::Irqs;
 
 pub struct Leds<'d> {
     pub ws2812: PioWs2812<'d, PIO0, 0, 7>,
@@ -15,8 +17,8 @@ impl<'d> Leds<'d> {
     pub fn new(
         common: &mut Common<'d, PIO0>,
         sm0: StateMachine<'d, PIO0, 0>,
-        dma: DMA_CH0,
-        pin: PIN_33,
+        dma: Peri<'d, DMA_CH0>,
+        pin: Peri<'d, impl PioPin>,
     ) -> Self {
         // let Pio {
         //     mut common, sm0, ..

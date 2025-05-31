@@ -1,6 +1,5 @@
 use embassy_rp::{
-    peripherals::{PIN_43, PWM_SLICE9},
-    pwm::{Config, Pwm, SetDutyCycle},
+    peripherals::{PIN_43, PWM_SLICE9}, pio::PioPin, pwm::{ChannelBPin, Config, Pwm, SetDutyCycle, Slice}, Peri
 };
 use embassy_time::Timer;
 
@@ -56,8 +55,11 @@ pub struct Audio<'d> {
     pwm: Pwm<'d>,
 }
 
+// dma: Peri<'d, DMA_CH0>,
+// pin: Peri<'d, impl PioPin>,
+
 impl<'d> Audio<'d> {
-    pub fn new(pwm_slice: PWM_SLICE9, buzzer_pin: PIN_43) -> Audio<'d> {
+    pub fn new(pwm_slice: Peri<'d, PWM_SLICE9>, buzzer_pin: Peri<'d, PIN_43>) -> Audio<'d> {
         let c = Config::default();
         let pwm = Pwm::new_output_b(pwm_slice, buzzer_pin, c.clone());
         Audio { pwm }
@@ -71,12 +73,29 @@ impl<'d> Audio<'d> {
         c.top = note;
 
         self.pwm.set_config(&c);
-        let _ = self.pwm.set_duty_cycle_percent(50);
+        let _ = self.pwm.set_duty_cycle_percent(1);
 
         Timer::after_millis(500).await;
 
         let _ = self.pwm.set_duty_cycle_percent(0);
         Timer::after_millis(100).await;
+    }
+
+    /// *Warning* The buzzer is loud and high pitched. Still working on volume control
+    pub async fn play_adv(&mut self, frequency: f32, volume: u8, duration: u64) {
+        // let note = note.note();
+        let note = calc_note(frequency);
+        let mut c = Config::default();
+        // c.compare_b = 500;
+        c.top = note;
+
+        self.pwm.set_config(&c);
+        let _ = self.pwm.set_duty_cycle_percent(volume);
+
+        Timer::after_millis(duration).await;
+
+        let _ = self.pwm.set_duty_cycle_percent(0);
+        // Timer::after_millis(100).await;
     }
 }
 
