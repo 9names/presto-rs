@@ -94,7 +94,7 @@ pub struct Peripherals {
     //Hey Presto
     pub LEDS: Leds<'static>,
     pub BUZZER: Audio<'static>,
-    // pub ST7701: ST7701,
+    pub ST7701: ST7701<'static>,
 }
 
 pub async fn init(config: Config) -> Peripherals {
@@ -233,6 +233,6 @@ pub async fn init(config: Config) -> Peripherals {
         //Hey Presto
         LEDS: Leds::new(&mut common, sm0, p.DMA_CH0, p.PIN_33),
         BUZZER: Audio::new(p.PWM_SLICE9, p.PIN_43),
-        // ST7701: display,
+        ST7701: display,
     }
 }
